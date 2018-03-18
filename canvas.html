@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body {
+            background: #cecece;
+        }
+        .container {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 130px;
+            height: 130px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <canvas class="canvas" id="canvas"></canvas>
+</div>
+<script src="js/process.js"></script>
+<script>
+    window.onload = function () {
+
+        let ctd = new Countdown();
+        ctd.init({
+            id: "canvas",
+            size: 130,
+            time: 30,
+        });
+    };
+
+</script>
+</body>
+</html>
