@@ -5,19 +5,22 @@
 function Countdown() {
     // 设置默认参数
     this.settings = {
-        id: "canvas",
-        size: 130,
-        borderWidth: 4,
-        color_1: "#fff",
-        color_2: "#ffc720",
-        color_3: "#4e84e5",
+        id: "canvas",         // ID，canvas一定要有ID属性
+        size: 130,            // 绘制圆形的最大尺寸，宽=高
+        borderWidth: 4,       // 边框宽度
+        borderColor:"#fff",   // 边框颜色
+        outerColor:"#fff",    // 最外层底圆颜色
+        scheduleColor:"#fff", // 进度条动画颜色
+        fontColor: "#fff",    // 字体颜色
+        ringColor: "#ffc720", // 进度条环形颜色
+        innerColor: "#4e84e5",// 最内圆底色
         fontSize: 50,
         time: 5
     }
 }
 
 Countdown.prototype.init = function (opt) {
-    this.obj = document.getElementById(opt.id);
+    this.obj = document.getElementById(this.settings.id);
     this.obj.width = this.settings.size;
     this.obj.height = this.settings.size;
     this.ctx = this.obj.getContext("2d");
@@ -27,16 +30,16 @@ Countdown.prototype.init = function (opt) {
 
 // 绘制底色
 Countdown.prototype.drawBackground = function () {
-    this.drawCircle(0, 360, 0, this.settings.color_1);
+    this.drawCircle(0, 360, 0, this.settings.outerColor);
 };
 // 绘制进度条动画背景
 Countdown.prototype.drawProcess = function () {
-    this.drawCircle(0, 360, 4, this.settings.color_2);
+    this.drawCircle(0, 360, 4, this.settings.ringColor);
 };
 
 // 绘制倒计时
 Countdown.prototype.drawInner = function () {
-    this.drawCircle(0, 360, 23, this.settings.color_3);
+    this.drawCircle(0, 360, 23, this.settings.innerColor);
     this.strokeBorder(this.settings.borderWidth);
 };
 
@@ -51,7 +54,7 @@ Countdown.prototype.drawAnimate = function () {
     this.ctx.beginPath();
     this.ctx.moveTo(this.settings.size / 2, this.settings.size / 2);
     this.ctx.arc(this.settings.size / 2, this.settings.size / 2, this.settings.size / 2 -3, startAng * deg, endAng * deg, false);
-    this.ctx.fillStyle = this.settings.color_1;
+    this.ctx.fillStyle = this.settings.scheduleColor;
     this.ctx.fill();
     this.ctx.closePath();
 
@@ -59,7 +62,7 @@ Countdown.prototype.drawAnimate = function () {
 // 绘制边框
 Countdown.prototype.strokeBorder = function (borderWidth) {
     this.ctx.lineWidth = borderWidth;
-    this.ctx.strokeStyle = this.settings.color_1;
+    this.ctx.strokeStyle = this.settings.borderColor;
     this.ctx.stroke();
 };
 // 绘制文字
@@ -67,7 +70,7 @@ Countdown.prototype.strokeText = function (text) {
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
     this.ctx.font = this.settings.fontSize+"px"+ " microsoft yahei";
-    this.ctx.fillStyle = this.settings.color_1;
+    this.ctx.fillStyle = this.settings.fontColor;
     this.ctx.fillText(text, this.settings.size / 2, this.settings.size / 2);
 };
 // 绘制圆
@@ -121,5 +124,3 @@ function extend(obj1,obj2){
         obj1[attr] = obj2[attr];
     }
 }
-
-
