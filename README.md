@@ -1,10 +1,13 @@
+效果如下图一：  
+
+![图一](https://upload-images.jianshu.io/upload_images/11189478-0749f239e48b744c.gif?imageMogr2/auto-orient/strip)
 ## Canvas环形倒计时组件  
 Canvas环形倒计时是基于Canvas实现的倒计时，建议于移动端使用  
 [Canvas环形倒计时 下载地址](https://github.com/BrigeCJ/Countdown.git)  
 
 ### 一、如何使用  
 #### 1. html代码  
-id必有
+ID属性可随意取名
 ```
 <canvas id="canvas"></canvas>
 ```
@@ -17,36 +20,33 @@ id必有
 <script src="js/process.js"></script>
 ```
 #### 3. 初始化参数  
-id为必填参数，其它项参数根据具体需求选填
+实例化即可
 ```
 <script>
     window.onload = function () {
-
         let ctd = new Countdown();
-        ctd.init({
-            id: "canvas",
-            size: 130,
-            time: 30,
-        });
+        ctd.init();
     };
 
 </script>
 ```
 ### 二、settings参数说明  
-
+以下参数非必选项，可根据具体需求配置
 ```
 window.onload = function () {
-
         let ctd = new Countdown();
         ctd.init({
-            id: "canvas",// 必填
-            size: 130,// 所绘制圆的宽高，（宽=高）
-            borderWidth: 4,// 环形边框
-            color_1: "#fff",// 边框、字体、进度条动画的颜色
-            color_2: "#ffc720",//进度条动画背景颜色 
-            color_3: "#4e84e5",// 倒计时文字背景颜色
-            fontSize: 50,// 字号大小
-            time: 5 // 所倒计的时间 
+            id: "canvas",         // ID，canvas一定要有ID属性
+            size: 130,            // 绘制圆形的最大尺寸，宽=高
+            borderWidth: 4,       // 边框宽度
+            borderColor:"#fff",   // 边框颜色
+            outerColor:"#fff",    // 最外层底圆颜色
+            scheduleColor:"#fff", // 进度条动画颜色
+            fontColor: "#fff",    // 字体颜色
+            ringColor: "#ffc720", // 进度条环形颜色
+            innerColor: "#4e84e5",// 最内圆底色
+            fontSize: 50,
+            time: 5
         });
     };
 ```
@@ -62,7 +62,7 @@ html
     <title>Title</title>
     <style>
         body {
-            background: #cecece;
+            background: #c2c1ce;
         }
         .container {
             position: absolute;
@@ -77,23 +77,13 @@ html
 </head>
 <body>
 <div class="container">
-    <canvas id="canvas"></canvas>
+    <canvas class="canvas" id="canvas"></canvas>
 </div>
 <script src="js/process.js"></script>
 <script>
     window.onload = function () {
-
         let ctd = new Countdown();
-        ctd.init({
-            id: "canvas",
-            size: 130,
-            borderWidth: 4,
-            color_1: "#fff",
-            color_2: "#ffc720",
-            color_3: "#4e84e5",
-            fontSize: 50,
-            time: 5
-        });
+        ctd.init();
     };
 </script>
 </body>
@@ -110,19 +100,22 @@ js
 function Countdown() {
     // 设置默认参数
     this.settings = {
-        id: "canvas",
-        size: 130,
-        borderWidth: 4,
-        color_1: "#fff",
-        color_2: "#ffc720",
-        color_3: "#4e84e5",
+        id: "canvas",         // ID，canvas一定要有ID属性
+        size: 130,            // 绘制圆形的最大尺寸，宽=高
+        borderWidth: 4,       // 边框宽度
+        borderColor:"#fff",   // 边框颜色
+        outerColor:"#fff",    // 最外层底圆颜色
+        scheduleColor:"#fff", // 进度条动画颜色
+        fontColor: "#fff",    // 字体颜色
+        ringColor: "#ffc720", // 进度条环形颜色
+        innerColor: "#4e84e5",// 最内圆底色
         fontSize: 50,
         time: 5
     }
 }
 
 Countdown.prototype.init = function (opt) {
-    this.obj = document.getElementById(opt.id);
+    this.obj = document.getElementById(this.settings.id);
     this.obj.width = this.settings.size;
     this.obj.height = this.settings.size;
     this.ctx = this.obj.getContext("2d");
@@ -132,16 +125,16 @@ Countdown.prototype.init = function (opt) {
 
 // 绘制底色
 Countdown.prototype.drawBackground = function () {
-    this.drawCircle(0, 360, 0, this.settings.color_1);
+    this.drawCircle(0, 360, 0, this.settings.outerColor);
 };
 // 绘制进度条动画背景
 Countdown.prototype.drawProcess = function () {
-    this.drawCircle(0, 360, 4, this.settings.color_2);
+    this.drawCircle(0, 360, 4, this.settings.ringColor);
 };
 
 // 绘制倒计时
 Countdown.prototype.drawInner = function () {
-    this.drawCircle(0, 360, 23, this.settings.color_3);
+    this.drawCircle(0, 360, 23, this.settings.innerColor);
     this.strokeBorder(this.settings.borderWidth);
 };
 
@@ -156,7 +149,7 @@ Countdown.prototype.drawAnimate = function () {
     this.ctx.beginPath();
     this.ctx.moveTo(this.settings.size / 2, this.settings.size / 2);
     this.ctx.arc(this.settings.size / 2, this.settings.size / 2, this.settings.size / 2 -3, startAng * deg, endAng * deg, false);
-    this.ctx.fillStyle = this.settings.color_1;
+    this.ctx.fillStyle = this.settings.scheduleColor;
     this.ctx.fill();
     this.ctx.closePath();
 
@@ -164,7 +157,7 @@ Countdown.prototype.drawAnimate = function () {
 // 绘制边框
 Countdown.prototype.strokeBorder = function (borderWidth) {
     this.ctx.lineWidth = borderWidth;
-    this.ctx.strokeStyle = this.settings.color_1;
+    this.ctx.strokeStyle = this.settings.borderColor;
     this.ctx.stroke();
 };
 // 绘制文字
@@ -172,7 +165,7 @@ Countdown.prototype.strokeText = function (text) {
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
     this.ctx.font = this.settings.fontSize+"px"+ " microsoft yahei";
-    this.ctx.fillStyle = this.settings.color_1;
+    this.ctx.fillStyle = this.settings.fontColor;
     this.ctx.fillText(text, this.settings.size / 2, this.settings.size / 2);
 };
 // 绘制圆
@@ -226,6 +219,6 @@ function extend(obj1,obj2){
         obj1[attr] = obj2[attr];
     }
 }
-
 ```
+
 
