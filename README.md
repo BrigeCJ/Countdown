@@ -220,5 +220,246 @@ function extend(obj1,obj2){
     }
 }
 ```
+### 四、附加——canvas准备工作
+canvas其实没有那么玄乎，它不外乎是一个H5的标签，跟其它HTML标签如出一辙：
 
+```
+<canvas id="canvas"></canvas>  
+```
 
+注意最好在一开始的时候就给canvas设置好其宽高（若不设定宽高，浏览器会默认设置canvas大小为宽300、高100像素），而且不能使用css来设置（会被拉伸），建议直接写于canvas标签内部：
+
+```
+<canvas id="canvas" width="130" height="130"></canvas>
+```
+
+canvas本身没有任何的绘图能力，所有的绘图工作都是通过js来实现的。通常我们在js通过getElementById来获取要操作的canvas（这意味着得给canvas设个id）：
+
+```
+var c = document.getElementById("canvas");
+var ctx = c.getContext("2d");
+```
+1.准备好画笔之后就可以开始绘图了，环形其实就是半径不同的同心圆，圆心坐标是（size/2,size/2）, 先画一个最大的白色背景底圆，半径是size/2。 
+```
+let deg = Math.PI / 180;
+// beginPath()可以做到隔离路径绘制效果的作用，防止之前的效果被污染。
+ctx.beginPath();
+
+// tcx.arc(圆心X,圆心Y,半径,起始角度,结束角度,顺逆时针);
+ctx.arc(size / 2, size / 2, size / 2, 0* deg, 360 * deg, false);
+ctx.fillStyle = "#fff";
+ctx.fill();
+ctx.closePath();
+
+```
+![1.png](https://upload-images.jianshu.io/upload_images/11189478-49e1bdf1e44e46b2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+    
+2.开始画第二个黄色打底圆，圆心也是(size/2，size/2),只是半径比白色底圆小4px，所以黄色底圆的半径是(size/2-4)   
+```
+let deg = Math.PI / 180;
+// beginPath()可以做到隔离路径绘制效果的作用，防止之前的效果被污染。
+ctx.beginPath();
+
+// tcx.arc(圆心X,圆心Y,半径,起始角度,结束角度,顺逆时针);
+ctx.arc(size / 2, size / 2, size / 2-4, 0* deg, 360 * deg, false);
+ctx.fillStyle = "#fff";
+ctx.fill();
+ctx.closePath();
+
+```
+![3.png](https://upload-images.jianshu.io/upload_images/11189478-10844796a57d14ce.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240) 
+
+3.开始画蓝色内圆，同理圆心为(size/2,size/2)，半径为(size-23)，再给它加上4px的白色边框。
+
+```
+let deg = Math.PI / 180;
+// beginPath()可以做到隔离路径绘制效果的作用，防止之前的效果被污染。
+ctx.beginPath();
+
+// tcx.arc(圆心X,圆心Y,半径,起始角度,结束角度,顺逆时针);
+ctx.arc(size / 2, size / 2, size / 2-23, 0* deg, 360 * deg, false);
+ctx.fillStyle = "#fff";
+ctx.fill();
+ctx.closePath();
+
+// 白色边框
+ctx.lineWidth = 4;
+ctx.strokeStyle = #fff;
+ctx.stroke();
+```
+![4.png](https://upload-images.jianshu.io/upload_images/11189478-e46e30823e95973f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)  
+
+4.绘制文字，垂直居中
+```
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+ctx.fillStyle = "#fff";
+// ctx.fillText(文字，相对画布的X坐标，相对画布的Y坐标)
+ctx.fillText(30, size / 2, size / 2);
+```
+![5.png](https://upload-images.jianshu.io/upload_images/11189478-8f54ea0cd362a79d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)  
+
+5.如何制作动画？其实也是画白色圆的过程，慢慢的覆盖黄色进度条的过程，那么先把白色的圆画出来出来，这个时候蓝圆就会被白色的动画圆给盖住，这个时候最后画蓝圆就好了。
+
+```
+let deg = Math.PI / 180;
+ctx.beginPath();
+// tcx.arc(圆心X,圆心Y,半径,起始角度,结束角度,顺逆时针);
+ctx.arc(size / 2, size / 2, size / 2-4, 0* deg, 360 * deg, false);
+ctx.fillStyle = "#fff";
+ctx.fill();
+ctx.closePath();
+```
+
+![图一](https://upload-images.jianshu.io/upload_images/11189478-0749f239e48b744c.gif?imageMogr2/auto-orient/strip)  
+
+6.比较简单的绘画过程完成了，接下来要将动画和数字关联起来，利用当前的最新时间-最开始的时间，再除总的时间可以得到一个关键的百分比，这个百分比决定数字的变化，以及白色动画圆绘制的角度。
+
+```
+Countdown.prototype.countdown = function () {
+    let oldTime = +new Date();// 过去的时间：1522136419291
+    timer = setInterval(() => {
+        let currentTime = +new Date();// 现在的时间：1522136419393
+        let allMs = this.settings.time * 1000;// 总时间豪秒数：如30*1000=30 000ms
+        schedule = (currentTime - oldTime) / allMs;// 绘制百分比：（1522136419393-1522136419291）/30000=0.0204
+        this.schedule = schedule;
+        this.drawAll(schedule);
+        if (currentTime - oldTime >= allMs) {
+            // 重绘
+            this.drawBackground();
+            this.drawProcess();
+            this.drawAnimate();
+            this.drawInner();
+            this.strokeText(0);
+            clearInterval(timer);
+        }
+    }, 10);
+};
+
+// 绘制所有
+Countdown.prototype.drawAll = function (schedule) {
+    schedule = schedule >= 1 ? 1 : schedule;
+    let text = parseInt(this.settings.time * (1 - schedule)) + 1;
+    // 清除画布
+    this.ctx.clearRect(0, 0, this.settings.size, this.settings.size);
+    this.drawBackground();
+    this.drawProcess();
+    this.drawAnimate();
+    this.drawInner();
+    this.strokeText(text);
+};
+
+// 绘制进度条动画
+Countdown.prototype.drawAnimate = function () {
+    // 旋转的角度
+    let deg = Math.PI / 180;
+    let v = schedule * 360,
+        startAng = -90,// 开始角度
+        endAng = -90 + v;// 结束角度
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.settings.size / 2, this.settings.size / 2);
+    this.ctx.arc(this.settings.size / 2, this.settings.size / 2, this.settings.size / 2 - 3, startAng * deg, endAng * deg, false);
+    this.ctx.fillStyle = this.settings.scheduleColor;
+    this.ctx.fill();
+    this.ctx.closePath();
+};
+```
+![2.png](https://upload-images.jianshu.io/upload_images/11189478-3b13f71182fe3743.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+# 面向过程版本
+```
+/**
+    * 进度条动画
+    */
+    countdown: function () {
+        this.getSystemInfo().then(v => {
+            // 自适应
+            let width = v.windowWidth,
+                size = width >= 414 ? 66 : 400 / 414 * 66;
+            size = parseInt(size);
+            size = size % 2 ? size + 1 : size;
+
+            let maxtime =30,
+                sTime = +new Date,
+
+                temp = setInterval(() => {
+                    let time = maxtime * 1000,
+                        currentTime = +new Date,
+                        schedule = (currentTime - sTime) / time;
+
+                    this.drew(schedule, maxtime, size);
+
+                    if (currentTime - sTime >= time) {
+                        // 绘制文字
+                        this.setData({
+                            schedule: 0
+                        });
+                        clearInterval(temp);
+                    };
+                }, 100);
+
+        });
+    },
+
+    /**
+     * 绘制
+     */
+    drew: function (schedule, val, size) {
+        size = size || 66;
+        const _ts = this;
+        schedule = schedule >= 1 ? 1 : schedule;
+
+        let text = parseInt(val - val * schedule),
+            r = size / 2,
+            deg = Math.PI / 180;
+
+        _ts.setData({
+            width: size,
+            height: size,
+            schedule: text + 1
+        });
+
+        // 清除画布
+        ctx.clearRect(0, 0, size, size);
+
+        // 绘制白色底
+        ctx.beginPath();
+        ctx.arc(r, r, r, 0 * deg, 360 * deg);
+        ctx.fillStyle = 'rgba(255,255,255,1)';
+        ctx.closePath();
+        ctx.fill();
+
+        // 绘制橙色
+        ctx.beginPath();
+        ctx.arc(r, r, r - 2, 0 * deg, 360 * deg);
+        ctx.fillStyle = 'rgba(248,200,80,1)';
+        ctx.closePath();
+        ctx.fill();
+
+        // 绘制白色进度条
+        let v = schedule * 360;
+
+        ctx.beginPath();
+        ctx.moveTo(r, r);
+        ctx.arc(r, r, r, -90 * deg, (-90 + v) * deg);
+
+        ctx.fillStyle = 'rgba(255,255,255,1)';
+        ctx.closePath();
+        ctx.fill();
+
+        // 中心蓝色底
+        ctx.beginPath();
+        ctx.arc(r, r, r - 12, 0 * deg, 360 * deg);
+        ctx.fillStyle = 'rgba(90,140,220,1)';
+        ctx.closePath();
+        ctx.fill();
+
+        // 绘制文字
+        ctx.strokeText();
+        
+        // 统一画
+        ctx.draw();
+            
+    },
+```
